@@ -1,0 +1,38 @@
+# Local credentials and environment overrides
+/esphome/secrets.yaml
+.env
+.env.*
+!.env.example
+!.env.sample
+
+# Python environments and caches
+/.venv/
+/tmp/
+**/__pycache__/
+*.py[cod]
+
+# ESPHome generated state and build output
+/esphome/.esphome/
+
+# Serial logs, emulator output, and logic-analyzer captures
+*.log
+*.sr
+/loop-*/
+/loop-capture-current.*
+*.pid
+/replay-*-console-*.txt
+/stlink-*.txt
+
+# Extracted OEM firmware binaries are not redistributable project source
+/firmware-dumps/**/*.bin
+
+# Local Codex/agent state
+/.agents/
+/.codex/
+/AGENT.md
+
+# Editor and operating-system files
+/.idea/
+/.vscode/
+.DS_Store
+Thumbs.db

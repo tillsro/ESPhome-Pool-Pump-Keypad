@@ -1,0 +1,35 @@
+Keypad STM32 firmware dump metadata
+==================================
+
+Date: 2026-06-28
+Target board: iLiving ILG8PP390-VS detachable keypad
+Probe/software: ST-Link V2 clone, STM32CubeProgrammer v2.22.0
+
+Readout result
+--------------
+- Device identified by STM32CubeProgrammer as STM32F05x/F030x8.
+- Device ID: 0x440.
+- Flash/NVM size reported: 64 KBytes.
+- CPU: Cortex-M0.
+- Target voltage observed during successful read: about 3.31-3.32 V.
+- Option bytes showed RDP 0xAA / Level 0, so flash readout was not protected.
+- No write/erase/unlock operation was performed.
+
+Dump files
+----------
+- keypad-flash-0x08000000-64k-read1.bin
+- keypad-flash-0x08000000-64k-read2.bin
+- keypad-firmware.bin: canonical copy of read1 for analysis.
+
+Verification
+------------
+- read1 and read2 are both 65536 bytes.
+- read1 SHA256: 010EB54D23D478BF094CB2AC2BA2B0880D778D2B6095476BEE09D7810DF5E7F7
+- read2 SHA256: 010EB54D23D478BF094CB2AC2BA2B0880D778D2B6095476BEE09D7810DF5E7F7
+
+Notes
+-----
+- After a reseat on 2026-06-28, STM32CubeProgrammer detected the ST-Link and target again.
+- A read-only HotPlug SRAM check confirmed the live USART2 TX buffer contained 01 70 5B 00 00 0C 00 00 00 00 D8 00.
+- If a later CLI call reports "No debug probe detected" while Windows still lists the ST-Link, first clear any stale STM32_Programmer_CLI process and re-run probe listing.
+- Continue analysis from keypad-firmware.bin unless a newer dump is explicitly created.
