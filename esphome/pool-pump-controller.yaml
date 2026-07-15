@@ -136,11 +136,12 @@ binary_sensor:
     filters:
       - delayed_on: 30ms
       - delayed_off: 30ms
-    on_click:
+    on_multi_click:
       # A quick press starts a stopped pump at the selected speed. Once running,
       # quick presses select the next of five pump-speed presets.
-      - min_length: 50ms
-        max_length: 800ms
+      - timing:
+          - ON for at most 800ms
+          - OFF for at least 50ms
         then:
           - if:
               condition:
@@ -162,11 +163,13 @@ binary_sensor:
                         return ${pump_speed_level_4}.0f;
                       return ${pump_speed_level_5}.0f;
 
-      # A long press is stop-only and fires when the button is released.
-      - min_length: 1500ms
-        max_length: 10s
+      # Stop immediately when the hold reaches 1.5 seconds; release is not
+      # required. Force a display refresh so the red state appears at once.
+      - timing:
+          - ON for at least 1500ms
         then:
           - switch.turn_off: pump_run
+          - component.update: disp
 
 spi:
   clk_pin: GPIO17
@@ -246,6 +249,8 @@ display:
       Color background(55, 61, 62);
       if (id(pump_fault).state) {
         background = Color(190, 45, 45);
+      } else if (!id(pump_run).state) {
+        background = Color(185, 66, 48);
       } else if (id(pump_online).state && id(pump_motor_running).state) {
         background = Color(26, 145, 82);
       } else if (id(pump_online).state) {

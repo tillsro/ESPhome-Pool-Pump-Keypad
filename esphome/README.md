@@ -24,8 +24,8 @@ The AtomS3's front screen/button uses two distinct gestures:
 
 - Short press (50-800 ms): start a stopped pump at the currently selected speed.
   While running, select the next speed level.
-- Long press (1.5-10 seconds): stop the pump when the button is released. A long
-  press never starts the pump.
+- Long press: stop the pump as soon as the hold reaches 1.5 seconds. Releasing
+  the button is not required, and a long press never starts the pump.
 
 Presses between 800 ms and 1.5 seconds do nothing. The five speed levels are:
 
@@ -117,7 +117,8 @@ advancing to the next code.
 The AtomS3 should change from `OFFLINE` to `STOPPED`. Short-press its button to
 request 1800 RPM; the display should show `RAMPING` and then `RUNNING`, with
 actual RPM climbing at the configured rate. Use further short presses to test
-all five speed levels, then hold for 1.5 seconds and release to test stopping.
+all five speed levels, then hold for 1.5 seconds to test stopping. The display
+should turn red at the 1.5-second threshold, even if the button is still held.
 
 While the emulator console is active, these single-key controls are available:
 
