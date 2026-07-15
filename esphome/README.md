@@ -22,12 +22,12 @@ request and a complete pump reply from
 
 The AtomS3's front screen/button uses two distinct gestures:
 
-- Short press (50-800 ms): select the next speed level.
-- Long press (3-10 seconds): toggle the pump between running and stopped when
-  the button is released.
+- Short press (50-800 ms): start a stopped pump at the currently selected speed.
+  While running, select the next speed level.
+- Long press (1.5-10 seconds): stop the pump when the button is released. A long
+  press never starts the pump.
 
-Presses between 800 ms and 3 seconds do nothing, which keeps an indecisive or
-accidental press from starting or stopping the motor. The five speed levels are:
+Presses between 800 ms and 1.5 seconds do nothing. The five speed levels are:
 
 | Level | Demand |
 |---|---:|
@@ -37,14 +37,13 @@ accidental press from starting or stopping the motor. The five speed levels are:
 | 4 | 2500 RPM |
 | 5 | 3450 RPM |
 
-The initial target is level 3 (1800 RPM). A short press changes speed
-immediately while the pump is running. While stopped, it only selects the speed
-that will be used by the next long-press start. The screen shows both the
-selected level and target RPM. A custom demand set through ESPHome or Home
-Assistant is labeled `CUSTOM SPEED`; the next short press selects the next
-higher preset, or wraps from level 5 to level 1. The five RPM values are kept in
-the `substitutions` block at the top of `pool-pump-controller.yaml` so they can
-be changed in one place.
+The initial target is level 3 (1800 RPM). The first short press starts the pump
+without advancing that target. Further short presses change speed immediately.
+The screen shows both the selected level and target RPM. A custom demand set
+through ESPHome or Home Assistant is labeled `CUSTOM SPEED`; while running, the
+next short press selects the next higher preset, or wraps from level 5 to level
+1. The five RPM values are kept in the `substitutions` block at the top of
+`pool-pump-controller.yaml` so they can be changed in one place.
 
 ## Isolated Waveshare pump emulator
 
@@ -115,11 +114,10 @@ After each code appears, wait at least three seconds and press the keypad power
 button twice. The emulator waits for the second press's nonzero demand before
 advancing to the next code.
 
-The AtomS3 should change from `OFFLINE` to `STOPPED`. Hold its button for three
-seconds and release it to request 1800 RPM; the display should show `RAMPING`
-and then `RUNNING`, with actual RPM climbing at the configured rate. Use short
-presses to test all five speed levels, then hold for three seconds and release
-again to test stopping.
+The AtomS3 should change from `OFFLINE` to `STOPPED`. Short-press its button to
+request 1800 RPM; the display should show `RAMPING` and then `RUNNING`, with
+actual RPM climbing at the configured rate. Use further short presses to test
+all five speed levels, then hold for 1.5 seconds and release to test stopping.
 
 While the emulator console is active, these single-key controls are available:
 
