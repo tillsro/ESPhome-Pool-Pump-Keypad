@@ -407,6 +407,30 @@ For an isolated bench setup with no pump or keypad connected:
 Power the Waveshare and AtomS3 through their own USB connections. Leave the
 Atomic base's `DC24V` terminal disconnected.
 
+### Hardware photos and M5Stack adapter plate
+
+These photos document the tested pump electronics, communication connector,
+and the finished AtomS3 installation. The controller is mounted in a custom
+3D-printed adapter plate that measures 115 x 115 mm overall and holds the
+AtomS3 and Atomic RS485 Base behind the panel.
+
+| Pump controller board | Communication connector detail |
+|---|---|
+| ![Pump controller board inside its enclosure](hardware/images/pump-controller-pcb.png) | ![Close-up of the pump controller communication connector and PCB labels](hardware/images/pump-controller-communication-connector.png) |
+
+| Finished adapter plate | Adapter plate interior |
+|---|---|
+| ![Front of the printed M5Stack adapter plate with AtomS3 installed](hardware/images/m5stack-adapter-plate-front.png) | ![Inside of the printed M5Stack adapter plate with the RS485 hardware and cable](hardware/images/m5stack-adapter-plate-interior.png) |
+
+The enclosure design files are ready to download or modify:
+
+- [M5Stack Pump Adapter Plate STEP model](hardware/cad/m5stack-pump-adapter-plate.step)
+- [M5Stack Pump Adapter Plate dimensioned drawing (PDF)](hardware/cad/m5stack-pump-adapter-plate-drawing.pdf)
+
+The drawing uses millimeters and shows the 115 x 115 mm plate, 24.2 x 24.2 mm
+AtomS3 opening, and 4 mm corner mounting holes. Check the dimensions against
+your enclosure before printing or drilling.
+
 ## Quick Start
 
 ### Probe or control the real pump with the Waveshare
@@ -512,6 +536,8 @@ the prime sequence.
 | `esphome/pool-pump-controller.yaml` | AtomS3 user configuration |
 | `esphome/components/iliving_pump/` | Local ESPHome protocol component |
 | `esphome/README.md` | AtomS3 build, wiring, and bench-test guide |
+| `hardware/cad/` | STEP model and dimensioned PDF drawing for the M5Stack adapter plate |
+| `hardware/images/` | Pump electronics, connector, and completed enclosure reference photos |
 | `loop-capture.ps1` | Repeated FX2/sigrok logic capture |
 | `scrape-rs485.ps1` | Timestamped USB-RS485 byte capture |
 | `firmware-dumps/` | Read-only keypad firmware research artifacts; not required at runtime |
