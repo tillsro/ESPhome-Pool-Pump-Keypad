@@ -40,7 +40,7 @@ brands named below.
 | Original keypad -> real ILG8PP390-VS | **Confirmed:** captured and decoded at startup, prime, presets, custom speeds, and stop |
 | AtomS3 + Atomic RS485 Base -> PC emulator | **Confirmed:** 204/204 requests accepted in the recorded bench run; start, stop, RPM ramping, faults, and offline handling tested |
 | Original keypad -> PC emulator | **Confirmed:** prime behavior and all 11 documented faults tested |
-| AtomS3 + Atomic RS485 Base -> real pump | **Not yet confirmed:** perform the first live test with the wiring procedure in [`esphome/README.md`](esphome/README.md) |
+| AtomS3 + Atomic RS485 Base -> real pump | **Confirmed:** direct communication and pump control using pump `485A+` -> Atomic `A` and pump `485A-` -> Atomic `B` |
 
 The original keypad uses an STM32F030-family MCU. Its flash was read twice with
 matching output at RDP Level 0, without erase, unlock, or write operations.
@@ -67,7 +67,7 @@ single method was sufficient by itself.
 | PulseView and `sigrok-cli` | Recorded and decoded the logic-analyzer captures |
 | PowerShell | Automated repeated captures, timestamped serial logging, frame replay, timing, and reply validation |
 | Python | Implemented the stateful pump emulator and repeatable protocol tests |
-| M5Stack AtomS3 and Atomic RS485 Base | Exercised the finished ESPHome controller against the PC emulator |
+| M5Stack AtomS3 and Atomic RS485 Base | Exercised the ESPHome controller against both the PC emulator and real pump |
 
 ### Establishing the physical bus
 
@@ -199,10 +199,11 @@ display followed stop, ramp, run, fault, and offline states. Protocol fixtures
 and Python tests now preserve the request, reply, checksum, CRC, scaling, fault,
 and stream-recovery behavior that was learned from the hardware.
 
-The remaining live-hardware boundary is explicit: the Waveshare implementation
-has controlled the real pump, and the AtomS3 implementation has passed the
-isolated emulator test, but the AtomS3-to-real-pump connection has not yet been
-marked confirmed.
+The AtomS3 was then connected to the real pump with pump `485A+` wired to Atomic
+`A`, pump `485A-` wired to Atomic `B`, and a shared ground. Direct communication
+and pump control were confirmed on 2026-07-15. This closes the final
+AtomS3-to-real-pump validation gap while keeping the PC emulator available for
+tests that do not need a running motor.
 
 ## Protocol Summary
 
@@ -377,6 +378,21 @@ For passive logic capture, the tested channel assignment is:
 | `GND` | `GND` |
 
 The usable UART stream decodes on `D1` with RX inversion enabled.
+
+### Proven AtomS3-to-pump wiring
+
+This mapping was validated on the real iLiving ILG8PP390-VS on 2026-07-15:
+
+| Pump cable | Atomic RS485 Base |
+|---|---|
+| `485A+` | `A` |
+| `485A-` | `B` |
+| `GND` | `G` |
+| `+5V` | Not connected |
+| `485B+`, `485B-` | Not connected |
+
+Power the AtomS3 through USB-C. Leave the Atomic base's `DC24V` terminal
+disconnected; the pump's `+5V` wire is not a suitable input for that terminal.
 
 ### PC emulator to Atomic RS485 Base
 

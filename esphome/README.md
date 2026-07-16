@@ -176,12 +176,13 @@ deterministic: rebooting the Atom while attached to the pump stops the motor.
 changed. Because the pump is silent until polled, passive mode cannot know or
 display the pump's physical state.
 
-Do not use `startup_mode: RUNNING` until bench testing is complete; it commands
-the configured RPM after every controller boot.
+Use `startup_mode: RUNNING` only when automatic motor start after every
+controller boot is explicitly desired. It commands the configured RPM after
+each boot.
 
 ## Hardware
 
-### Continue testing with the Waveshare first
+### Known-good Waveshare reference
 
 Keep using `replay-firmware-master-frame.ps1` as the known-good protocol oracle.
 Do not connect the Waveshare and Atom transmitters to the pump at the same time.
@@ -195,16 +196,16 @@ The proven Waveshare wiring remains:
 | `GND` | `GND` |
 | `+5V` | Not connected |
 
-The Waveshare labels are reversed relative to the electrical polarity observed
-on this bus. That finding does not automatically apply to the M5Stack base.
+The Waveshare labels are reversed relative to the pump cable labels. Do not
+reuse this crossed mapping for the M5Stack base.
 
-### First AtomS3/Atomic RS485 Base test
+### Proven AtomS3/Atomic RS485 Base wiring
 
 Power the AtomS3 from USB-C. On the Atomic base's four-position terminal, leave
 the `DC24V` input disconnected; the pump's `+5V` wire is not a suitable input for
 that terminal.
 
-Start with:
+Use the following mapping:
 
 | Pump cable | Atomic RS485 Base |
 |---|---|
@@ -213,9 +214,9 @@ Start with:
 | `GND` | `G` |
 | `+5V` | Not connected |
 
-If the log shows zero valid replies and rising missed replies, power down and
-swap only `A` and `B`. Reversed data polarity is non-destructive; it produces no
-valid replies. Do not change other wiring during that check.
+This wiring was validated against the real iLiving ILG8PP390-VS on 2026-07-15.
+The AtomS3 established communication and controlled the pump successfully. Do
+not cross `A` and `B` for this pump/base combination.
 
 The base has no built-in 120-ohm termination. Leave termination out for the
-initial short-cable test, matching the working Waveshare setup.
+short-cable connection, matching the validated setup.
