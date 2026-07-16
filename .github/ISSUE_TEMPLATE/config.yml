@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Private security report
+    url: https://github.com/tillsro/ESPhome-Pool-Pump-Keypad/security/advisories/new
+    about: Report vulnerabilities or unsafe control behavior without publishing details.

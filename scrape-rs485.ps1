@@ -1,7 +1,7 @@
 [CmdletBinding()]
 param(
     [string]$Port = 'COM3',
-    [int]$BaudRate = 9600,
+    [int]$BaudRate = 38400,
     [ValidateSet('None','Odd','Even','Mark','Space')]
     [string]$Parity = 'None',
     [int]$DataBits = 8,

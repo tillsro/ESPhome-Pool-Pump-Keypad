@@ -431,6 +431,55 @@ The drawing uses millimeters and shows the 115 x 115 mm plate, 24.2 x 24.2 mm
 AtomS3 opening, and 4 mm corner mounting holes. Check the dimensions against
 your enclosure before printing or drilling.
 
+## Fresh-Clone Setup
+
+The validated development environment uses Python 3.12 and ESPHome `2026.6.5`.
+The pinned development requirements include both ESPHome and the lightweight
+PC-emulator dependency.
+
+On Windows PowerShell:
+
+```powershell
+git clone https://github.com/tillsro/ESPhome-Pool-Pump-Keypad.git
+Set-Location .\ESPhome-Pool-Pump-Keypad
+py -3.12 -m venv .venv
+& '.\.venv\Scripts\python.exe' -m pip install --upgrade pip
+& '.\.venv\Scripts\python.exe' -m pip install -r requirements-dev.txt
+Copy-Item .\esphome\secrets.example.yaml .\esphome\secrets.yaml
+```
+
+On macOS or Linux:
+
+```bash
+git clone https://github.com/tillsro/ESPhome-Pool-Pump-Keypad.git
+cd ESPhome-Pool-Pump-Keypad
+python3.12 -m venv .venv
+. .venv/bin/activate
+python -m pip install --upgrade pip
+python -m pip install -r requirements-dev.txt
+cp esphome/secrets.example.yaml esphome/secrets.yaml
+```
+
+The example secrets are sufficient for validation, but replace every
+placeholder with a unique value before flashing hardware. From the repository
+root, verify the protocol fixtures and ESPHome configuration:
+
+```powershell
+& '.\.venv\Scripts\python.exe' -m unittest tests.test_pump_emulator -v
+& '.\.venv\Scripts\esphome.exe' config .\esphome\pool-pump-controller.yaml
+```
+
+For a complete firmware build on Windows, keep generated files outside a path
+containing spaces:
+
+```powershell
+$env:ESPHOME_BUILD_PATH = "$env:USERPROFILE\.esphome-build"
+& '.\.venv\Scripts\esphome.exe' compile .\esphome\pool-pump-controller.yaml
+```
+
+The same test, validation, and compile steps run automatically in GitHub
+Actions for every push and pull request.
+
 ## Quick Start
 
 ### Probe or control the real pump with the Waveshare
@@ -531,6 +580,7 @@ the prime sequence.
 | `pump_emulator.py` | Stateful 38-byte pump emulator with RPM ramping and fault injection |
 | `run-pump-emulator.ps1` | Windows launcher for the emulator |
 | `requirements-emulator.txt` | Clean Python environment dependency for the emulator |
+| `requirements-dev.txt` | Pinned Python and ESPHome development environment |
 | `tests/test_pump_emulator.py` | Protocol, parser, reply, and emulator tests |
 | `docs/keypad-compatibility-test.md` | Safe detached-keypad test and compatibility report procedure |
 | `esphome/pool-pump-controller.yaml` | AtomS3 user configuration |
@@ -541,15 +591,14 @@ the prime sequence.
 | `loop-capture.ps1` | Repeated FX2/sigrok logic capture |
 | `scrape-rs485.ps1` | Timestamped USB-RS485 byte capture |
 | `firmware-dumps/` | Read-only keypad firmware research artifacts; not required at runtime |
-
-The older `emulate-keypad.ps1` and `replay-prime-trigger.ps1` scripts preserve
-discarded protocol hypotheses for research history. Use
-`replay-firmware-master-frame.ps1` for the validated protocol.
+| `.github/` | CI, Dependabot, issue forms, and pull-request template |
+| `CHANGELOG.md` | Release notes, confirmed hardware, and known limitations |
+| `LICENSE` and `LICENSES/` | MIT software license and CC BY 4.0 documentation/media license |
 
 ## Tests
 
-The repository's existing ESPHome virtual environment can run the Python
-protocol fixtures:
+After completing [Fresh-Clone Setup](#fresh-clone-setup), run the Python
+protocol fixtures from the repository root:
 
 ```powershell
 & '.\.venv\Scripts\python.exe' -m unittest tests.test_pump_emulator -v
@@ -571,6 +620,14 @@ Do not publish extracted proprietary firmware unless you have redistribution
 rights. Hashes, disassembly notes, and independently written protocol
 descriptions are normally sufficient for compatibility work.
 
+## Licensing
+
+Software in this repository is licensed under the [MIT License](LICENSE).
+Documentation, photographs, drawings, CAD, and non-firmware research notes are
+licensed under the [Creative Commons Attribution 4.0 International
+License](LICENSES/CC-BY-4.0.txt). See [the license scope](LICENSES/README.md) for
+the file-level split and attribution guidance.
+
 ## Research Sources
 
 - [iLiving ILG8PP390-VS product page](https://ilivingusa.com/products/ilg8pp390-vs)
@@ -587,13 +644,14 @@ descriptions are normally sufficient for compatibility work.
 - [Illuminex AquaPump LU-VS130/220/390 manual](https://illuminexpool.com/wp-content/uploads/2025/01/AquaPump-VS-User-Manual-EN_FR-1.pdf)
 - [Trevoli SPV100/200/300 distributor manual](https://www.vortexdistributors.com/documents/SPV%20Series%202023.pdf)
 
-## Before a Public GitHub Release
+## Release Status
 
-- Add a project license. Repository visibility alone is not a software license.
-- Confirm `esphome/secrets.yaml`, build output, logs, and local captures are
-  excluded from commits unless intentionally published.
-- Decide whether to omit the original keypad binary from `firmware-dumps/` and
-  publish hashes and analysis instead.
-- Add clear photos or diagrams of the tested low-voltage wiring.
-- Keep compatibility claims at the evidence levels used above until another
-  owner supplies a matching capture.
+`v0.1.0` is the first public-ready release. It includes the real-pump controller,
+AtomS3 firmware, PC emulator, protocol tests, hardware documentation, and CAD
+used for the validated installation. See [CHANGELOG.md](CHANGELOG.md) for the
+confirmed hardware matrix and current limitations.
+
+Compatibility remains intentionally conservative: the iLiving `ILG8PP390-VS`
+is the only pump confirmed through direct control. Related Lingxiao and
+rebadged models remain unverified until another owner provides a matching
+passive capture or a complete offline keypad test.

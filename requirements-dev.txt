@@ -1,0 +1,2 @@
+-r requirements-emulator.txt
+esphome==2026.6.5

@@ -135,7 +135,7 @@ While the emulator console is active, these single-key controls are available:
 | `Q` | Stop the emulator |
 
 Every request and reply is written to a timestamped ASCII log. The protocol
-fixture tests can be rerun with:
+fixture tests can be rerun from the repository root with:
 
 ```powershell
 & '.\.venv\Scripts\python.exe' -m unittest tests.test_pump_emulator -v
@@ -143,8 +143,21 @@ fixture tests can be rerun with:
 
 ## Build
 
-1. Copy `secrets.example.yaml` to `secrets.yaml` and replace every placeholder.
-2. On Windows, if the repository path contains spaces, point ESPHome's build
+1. From the repository root, create the pinned Python 3.12 environment:
+
+   ```powershell
+   py -3.12 -m venv .venv
+   & '.\.venv\Scripts\python.exe' -m pip install --upgrade pip
+   & '.\.venv\Scripts\python.exe' -m pip install -r requirements-dev.txt
+   ```
+
+   See the root README for macOS and Linux commands. The validated requirement
+   is ESPHome `2026.6.5`.
+
+2. Copy `esphome\secrets.example.yaml` to `esphome\secrets.yaml` and replace
+   every placeholder before flashing hardware.
+
+3. On Windows, if the repository path contains spaces, point ESPHome's build
    output at a path without spaces before validating or compiling:
 
    ```powershell
@@ -154,16 +167,16 @@ fixture tests can be rerun with:
    Pioarduino can reject generated project paths containing whitespace. This
    environment variable is optional on other installations.
 
-3. Validate with:
+4. Validate from the repository root:
 
    ```powershell
-   esphome config .\pool-pump-controller.yaml
+   & '.\.venv\Scripts\esphome.exe' config .\esphome\pool-pump-controller.yaml
    ```
 
-4. Compile and upload over USB-C:
+5. Compile and upload over USB-C:
 
    ```powershell
-   esphome run .\pool-pump-controller.yaml
+   & '.\.venv\Scripts\esphome.exe' run .\esphome\pool-pump-controller.yaml
    ```
 
 ## Startup behavior

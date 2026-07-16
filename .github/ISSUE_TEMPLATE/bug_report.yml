@@ -1,0 +1,71 @@
+name: Bug report
+description: Report a reproducible software, protocol, or documentation problem.
+title: "[Bug] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Disconnect the original keypad before transmitting from another controller. Do not include credentials or proprietary firmware.
+
+  - type: input
+    id: version
+    attributes:
+      label: Project version
+      description: Release tag or commit hash used for the test.
+      placeholder: v0.1.0
+    validations:
+      required: true
+
+  - type: dropdown
+    id: path
+    attributes:
+      label: Test path
+      options:
+        - AtomS3 to real pump
+        - AtomS3 to PC emulator
+        - Waveshare to real pump
+        - Original keypad to PC emulator
+        - Documentation or build
+        - Other
+    validations:
+      required: true
+
+  - type: input
+    id: hardware
+    attributes:
+      label: Hardware and model
+      description: Include exact pump, keypad, controller, and RS-485 adapter models.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: Include sanitized logs or decoded frames when useful.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Reproduction steps
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: Safety checks
+      options:
+        - label: The original keypad and any other RS-485 transmitter were disconnected during active testing.
+          required: true
+        - label: This report contains no passwords, API keys, extracted firmware, or other private data.
+          required: true

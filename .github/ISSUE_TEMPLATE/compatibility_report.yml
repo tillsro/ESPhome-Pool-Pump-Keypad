@@ -1,0 +1,64 @@
+name: Compatibility report
+description: Report whether another pump or keypad matches the validated protocol.
+title: "[Compatibility] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Start with the offline compatibility procedure in docs/keypad-compatibility-test.md. Do not actively test an unknown pump until passive electrical and protocol checks match.
+
+  - type: input
+    id: brand_model
+    attributes:
+      label: Brand and exact model
+    validations:
+      required: true
+
+  - type: input
+    id: manual
+    attributes:
+      label: Manual or product URL
+
+  - type: textarea
+    id: connector
+    attributes:
+      label: Connector and measured voltages
+      description: List pin labels, idle voltages, ground reference, and how they were measured.
+    validations:
+      required: true
+
+  - type: textarea
+    id: capture
+    attributes:
+      label: Passive capture results
+      description: Include baud rate, polarity, request/reply lengths, cadence, checksums, and CRC results.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: result
+    attributes:
+      label: Compatibility result
+      options:
+        - Strong match
+        - Partial match
+        - No match
+        - Not enough evidence yet
+    validations:
+      required: true
+
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Additional evidence
+      description: Link to sanitized photos, captures, or decoded frame excerpts. Do not upload extracted firmware.
+
+  - type: checkboxes
+    id: consent
+    attributes:
+      label: Publication checks
+      options:
+        - label: I have removed credentials, serial numbers, location metadata, and other private information.
+          required: true
+        - label: I have not uploaded proprietary firmware or copyrighted manuals.
+          required: true
