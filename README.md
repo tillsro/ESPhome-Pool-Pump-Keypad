@@ -9,6 +9,17 @@ pump. It contains:
 - a PC pump emulator for testing either the AtomS3 or original keypad; and
 - logic captures and keypad firmware analysis used to recover the protocol.
 
+This project began with a more conventional approach. The iLiving manual
+advertises an external RS-485 mode compatible with Pentair automation, so we
+first tried the existing
+[`gazoodle/CenturyVSPump`](https://github.com/gazoodle/CenturyVSPump) ESPHome
+component. That project controls Century/Regal VGreen-style motors after they
+are placed into a specific automation protocol mode. We could not put the
+tested iLiving pump into any state that accepted those commands. Rather than
+continue guessing at an inactive external interface, we switched to the link
+we could prove was working: communication between the removable keypad and the
+motor controller. Emulating that keypad became the basis of this project.
+
 The protocol is not standard Modbus RTU. It uses a Modbus CRC-16, but it has no
 Modbus address, function code, or register map.
 
@@ -47,12 +58,12 @@ matching output at RDP Level 0, without erase, unlock, or write operations.
 
 ## How We Reverse Engineered It
 
-This project did not begin with a known Modbus register map or a service manual
-for the keypad link. We had a six-wire cable, a running pump, and a detachable
-keypad whose traffic had to be observed without disrupting it. The final
-protocol came from combining electrical measurements, controlled captures,
-failed replay experiments, firmware analysis, and physical pump tests. No
-single method was sufficient by itself.
+After the external-automation approach failed, we did not have a known register
+map or a service manual for the keypad link. We had a six-wire cable, a running
+pump, and a detachable keypad whose traffic had to be observed without
+disrupting it. The final protocol came from combining electrical measurements,
+controlled captures, failed replay experiments, firmware analysis, and
+physical pump tests. No single method was sufficient by itself.
 
 ### Hardware and tools
 
@@ -272,6 +283,14 @@ The iLiving manual describes an external RS-485 mode compatible with Pentair
 automation and says external keypad and RS-485 control are mutually exclusive.
 That interface must not be confused with the internal `01 70` keypad protocol
 implemented here.
+
+Before reverse-engineering the internal bus, we attempted to use
+[`CenturyVSPump`](https://github.com/gazoodle/CenturyVSPump) through that
+documented external-control path. We were never able to place the tested pump
+in a mode that accepted its commands. This does not show that the upstream
+component is faulty; it shows only that its expected Century/Regal automation
+mode was not accessible on our iLiving hardware. The known-active keypad bus
+therefore became the practical control path.
 
 The removable keypad cable has two differential pairs. `485A` carries the
 confirmed `01 70` traffic. `485B` is silent during normal passive captures, but
@@ -632,6 +651,7 @@ the file-level split and attribution guidance.
 
 - [iLiving ILG8PP390-VS product page](https://ilivingusa.com/products/ilg8pp390-vs)
 - [iLiving ILG8PP130/220/390 manual](https://cdn.shopify.com/s/files/1/0557/0356/8589/files/H40403925_SHP130_SFP220_SWP390-VS_ILG8PP_V1.pdf?v=1733963012)
+- [gazoodle/CenturyVSPump ESPHome component](https://github.com/gazoodle/CenturyVSPump)
 - [Lingxiao Relaax390-VS official product page](https://lingxiaopumps.com/products/lingxiao-3-9hp-variable-speed-pool-pump-inground-230v-smart-pool-pump-relaax390-vs)
 - [EPA ENERGY STAR certified pool-pump dataset](https://data.energystar.gov/Active-Specifications/ENERGY-STAR-Certified-Pool-Pumps/m8cf-pkii)
 - [EPA ENERGY STAR record for LX SWP390-VS](https://www.energystar.gov/productfinder/product/certified-pool-pumps/details/2618813/export/pdf)
