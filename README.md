@@ -441,6 +441,22 @@ AtomS3 and Atomic RS485 Base behind the panel.
 |---|---|
 | ![Front of the printed M5Stack adapter plate with AtomS3 installed](hardware/images/m5stack-adapter-plate-front.png) | ![Inside of the printed M5Stack adapter plate with the RS485 hardware and cable](hardware/images/m5stack-adapter-plate-interior.png) |
 
+#### Completed pump installation
+
+The finished wiring keeps the Atomic RS485 Base, connector adapter, and cable
+inside the printed plate. The assembled plate then mounts in the pump control
+enclosure with the AtomS3 screen and button accessible from the front.
+
+![Final internal wiring for the AtomS3 and Atomic RS485 Base](hardware/images/m5stack-controller-final-wiring.png)
+
+| Installed controller stopped | Installed controller running at 1800 RPM |
+|---|---|
+| ![Completed M5Stack controller installed in the pump enclosure and stopped](hardware/images/m5stack-controller-installed-stopped.png) | ![Completed M5Stack controller installed in the pump enclosure and running at 1800 RPM](hardware/images/m5stack-controller-installed-running.png) |
+
+| Running screen | Stopped screen |
+|---|---|
+| ![AtomS3 running screen showing 1800 RPM at level 3 of 5](hardware/images/m5stack-controller-running-closeup.png) | ![AtomS3 stopped screen showing zero RPM and a 2500 RPM target](hardware/images/m5stack-controller-stopped-closeup.png) |
+
 The enclosure design files are ready to download or modify:
 
 - [M5Stack Pump Adapter Plate STEP model](hardware/cad/m5stack-pump-adapter-plate.step)
