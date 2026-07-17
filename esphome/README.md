@@ -45,6 +45,31 @@ next short press selects the next higher preset, or wraps from level 5 to level
 1. The five RPM values are kept in the `substitutions` block at the top of
 `pool-pump-controller.yaml` so they can be changed in one place.
 
+## Display heat and image-retention protection
+
+The controller keeps the pump protocol and network services running while it
+manages the LCD separately:
+
+- After one minute without display activity, the backlight dims to 20% (or the
+  configured brightness when it is already lower than 20%).
+- After five total idle minutes, the backlight turns off, display refreshes are
+  suspended, and the GC9107 receives `Display OFF` (`0x28`) and `Sleep IN`
+  (`0x10`).
+- The first short press while asleep only wakes the display. It does not start
+  the pump or change speed. A 1.5-second hold still stops the pump and wakes the
+  red stopped screen at the hold threshold.
+- Pump run-state, speed, communication, and fault changes wake the display.
+  Faults prevent automatic dimming or sleep until the fault clears.
+- The `Screen Backlight` switch performs the same full sleep/wake sequence.
+  `Screen Brightness` stores the level restored on wake; setting it to zero
+  also sleeps the display.
+
+The timings and dim level are substitutions at the top of
+`pool-pump-controller.yaml`: `display_dim_after`,
+`display_sleep_after_dimming`, and `display_dim_percent`. The second delay is
+measured after dimming, so the defaults of one and four minutes produce a
+five-minute total sleep timeout.
+
 ## Isolated Waveshare pump emulator
 
 The PC can emulate the pump so the AtomS3 and Atomic RS485 Base can be tested

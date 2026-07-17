@@ -4,6 +4,9 @@ substitutions:
   pump_speed_level_3: "1800"
   pump_speed_level_4: "2500"
   pump_speed_level_5: "3450"
+  display_dim_after: 1min
+  display_sleep_after_dimming: 4min
+  display_dim_percent: "20"
 
 esphome:
   name: pool-pump-controller
@@ -12,15 +15,10 @@ esphome:
     - priority: -100
       then:
         - delay: 200ms
-        # The AtomS3 LCD wake command must run after SPI/display setup.
         - lambda: |-
-            id(disp).enable();
-            id(disp).transfer_byte(0x11);
-            id(disp).disable();
-        - delay: 120ms
-        - number.set:
-            id: screen_brightness
-            value: 100
+            id(display_ready) = true;
+        # The AtomS3 LCD wake command must run after SPI/display setup.
+        - script.execute: display_wake
 
 esp32:
   board: m5stack-atoms3
@@ -83,9 +81,15 @@ iliving_pump:
   run:
     name: Pump Run
     id: pump_run
+    on_turn_on:
+      - script.execute: display_wake
+    on_turn_off:
+      - script.execute: display_wake
   demand_rpm:
     name: Pump Demand RPM
     id: pump_demand_rpm
+    on_value:
+      - script.execute: display_wake
   actual_rpm:
     name: Pump RPM
     id: pump_rpm
@@ -95,15 +99,27 @@ iliving_pump:
   online:
     name: Pump Communication
     id: pump_online
+    on_press:
+      - script.execute: display_wake
+    on_release:
+      - script.execute: display_wake
   motor_running:
     name: Pump Motor Running
     id: pump_motor_running
+    on_press:
+      - script.execute: display_wake
+    on_release:
+      - script.execute: display_wake
   control_active:
     name: Pump Controller Active
     id: pump_control_active
   fault:
     name: Pump Fault
     id: pump_fault
+    on_press:
+      - script.execute: display_wake
+    on_release:
+      - script.execute: display_wake
   fault_code:
     name: Pump Fault Code
     id: pump_fault_code
@@ -145,23 +161,31 @@ binary_sensor:
         then:
           - if:
               condition:
-                switch.is_off: pump_run
+                lambda: return id(display_sleeping);
               then:
-                - switch.turn_on: pump_run
+                # The first short press only wakes the screen. It must not
+                # start the pump or change its selected speed.
+                - script.execute: display_wake
               else:
-                - number.set:
-                    id: pump_demand_rpm
-                    value: !lambda |-
-                      const float current = id(pump_demand_rpm).state;
-                      if (std::isnan(current) || current >= ${pump_speed_level_5}.0f)
-                        return ${pump_speed_level_1}.0f;
-                      if (current < ${pump_speed_level_2}.0f)
-                        return ${pump_speed_level_2}.0f;
-                      if (current < ${pump_speed_level_3}.0f)
-                        return ${pump_speed_level_3}.0f;
-                      if (current < ${pump_speed_level_4}.0f)
-                        return ${pump_speed_level_4}.0f;
-                      return ${pump_speed_level_5}.0f;
+                - if:
+                    condition:
+                      switch.is_off: pump_run
+                    then:
+                      - switch.turn_on: pump_run
+                    else:
+                      - number.set:
+                          id: pump_demand_rpm
+                          value: !lambda |-
+                            const float current = id(pump_demand_rpm).state;
+                            if (std::isnan(current) || current >= ${pump_speed_level_5}.0f)
+                              return ${pump_speed_level_1}.0f;
+                            if (current < ${pump_speed_level_2}.0f)
+                              return ${pump_speed_level_2}.0f;
+                            if (current < ${pump_speed_level_3}.0f)
+                              return ${pump_speed_level_3}.0f;
+                            if (current < ${pump_speed_level_4}.0f)
+                              return ${pump_speed_level_4}.0f;
+                            return ${pump_speed_level_5}.0f;
 
       # Stop immediately when the hold reaches 1.5 seconds; release is not
       # required. Force a display refresh so the red state appears at once.
@@ -169,6 +193,7 @@ binary_sensor:
           - ON for at least 1500ms
         then:
           - switch.turn_off: pump_run
+          - script.execute: display_wake
           - component.update: disp
 
 spi:
@@ -188,6 +213,102 @@ globals:
     type: float
     restore_value: true
     initial_value: "100.0"
+  - id: display_ready
+    type: bool
+    restore_value: false
+    initial_value: "false"
+  - id: display_sleeping
+    type: bool
+    restore_value: false
+    initial_value: "true"
+  - id: display_sleep_command_ms
+    type: uint32_t
+    restore_value: false
+    initial_value: "0"
+
+script:
+  # Restarting this script records display activity without storing timestamps.
+  # The second delay is measured from the dim event, for five total idle minutes.
+  - id: display_idle_timer
+    mode: restart
+    then:
+      - delay: ${display_dim_after}
+      - if:
+          condition:
+            lambda: |-
+              return id(display_ready) && !id(display_sleeping) &&
+                     !id(pump_fault).state;
+          then:
+            - lambda: |-
+                const float wake_level =
+                    id(last_brightness) > 0.0f ? id(last_brightness) : 100.0f;
+                const float dim_level =
+                    std::min(wake_level, ${display_dim_percent}.0f);
+                id(backlight_pwm).set_level(dim_level / 100.0f);
+      - delay: ${display_sleep_after_dimming}
+      - if:
+          condition:
+            lambda: |-
+              return id(display_ready) && !id(display_sleeping) &&
+                     !id(pump_fault).state;
+          then:
+            - script.execute: display_sleep
+
+  - id: display_sleep
+    mode: restart
+    then:
+      - if:
+          condition:
+            lambda: return id(display_ready) && !id(display_sleeping);
+          then:
+            - script.stop: display_idle_timer
+            - component.suspend: disp
+            - lambda: |-
+                id(backlight_pwm).set_level(0.0f);
+                id(disp).enable();
+                id(disp).transfer_byte(0x28);  // Display OFF
+                id(disp).disable();
+                id(disp).enable();
+                id(disp).transfer_byte(0x10);  // Sleep IN
+                id(disp).disable();
+                id(display_sleep_command_ms) = millis();
+                id(display_sleeping) = true;
+
+  - id: display_wake
+    mode: restart
+    then:
+      - if:
+          condition:
+            lambda: return id(display_ready);
+          then:
+            - script.stop: display_idle_timer
+            - if:
+                condition:
+                  lambda: return id(display_sleeping);
+                then:
+                  # GC9107 requires 120 ms between Sleep IN and Sleep OUT.
+                  - delay: !lambda |-
+                      const uint32_t elapsed =
+                          millis() - id(display_sleep_command_ms);
+                      return elapsed >= 120U ? 0U : 120U - elapsed;
+                  - lambda: |-
+                      id(disp).enable();
+                      id(disp).transfer_byte(0x11);  // Sleep OUT
+                      id(disp).disable();
+                  - delay: 120ms
+                  - lambda: |-
+                      id(disp).enable();
+                      id(disp).transfer_byte(0x29);  // Display ON
+                      id(disp).disable();
+                      id(display_sleeping) = false;
+                  - component.resume: disp
+                  - component.update: disp
+            - number.set:
+                id: screen_brightness
+                value: !lambda |-
+                  return id(last_brightness) > 0.0f
+                             ? id(last_brightness)
+                             : 100.0f;
 
 switch:
   - platform: template
@@ -195,16 +316,11 @@ switch:
     name: Screen Backlight
     entity_category: config
     lambda: |-
-      return id(screen_brightness).state > 0.0f;
+      return !id(display_sleeping) && id(screen_brightness).state > 0.0f;
     turn_on_action:
-      - number.set:
-          id: screen_brightness
-          value: !lambda |-
-            return (id(last_brightness) <= 0.0f) ? 100.0f : id(last_brightness);
+      - script.execute: display_wake
     turn_off_action:
-      - number.set:
-          id: screen_brightness
-          value: 0
+      - script.execute: display_sleep
 
 number:
   - platform: template
@@ -218,10 +334,23 @@ number:
     initial_value: 100
     optimistic: true
     set_action:
-      - lambda: |-
-          id(backlight_pwm).set_level(x / 100.0f);
-          if (x > 0.0f)
-            id(last_brightness) = x;
+      - if:
+          condition:
+            lambda: return x <= 0.0f;
+          then:
+            - script.execute: display_sleep
+          else:
+            - lambda: |-
+                id(last_brightness) = x;
+                if (!id(display_sleeping))
+                  id(backlight_pwm).set_level(x / 100.0f);
+            - if:
+                condition:
+                  lambda: return id(display_sleeping);
+                then:
+                  - script.execute: display_wake
+                else:
+                  - script.execute: display_idle_timer
 
 font:
   - file: gfonts://Roboto Mono
