@@ -433,6 +433,11 @@ and the finished AtomS3 installation. The controller is mounted in a custom
 3D-printed adapter plate that measures 115 x 115 mm overall and holds the
 AtomS3 and Atomic RS485 Base behind the panel.
 
+This is the original removable iLiving keypad used for the protocol captures,
+STM32 firmware analysis, real-pump reference tests, and offline emulator tests:
+
+![Front and rear views of the original iLiving pool pump keypad](hardware/images/original-iliving-keypad-front-back.jpg)
+
 | Pump controller board | Communication connector detail |
 |---|---|
 | ![Pump controller board inside its enclosure](hardware/images/pump-controller-pcb.png) | ![Close-up of the pump controller communication connector and PCB labels](hardware/images/pump-controller-communication-connector.png) |
